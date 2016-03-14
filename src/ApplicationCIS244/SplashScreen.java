@@ -3,100 +3,105 @@ package ApplicationCIS244;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
-import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
+import java.awt.Cursor;
 
-public class SplashScreen extends JWindow {
+@SuppressWarnings("serial")
+public class SplashScreen extends JFrame {
 
-    static boolean isRegistered;
-    private static JProgressBar progressBar = new JProgressBar();
-    private static SplashScreen execute;
-    private static int count;
-    private static Timer timer1;
+	private static final int SPEED = 50;
+	private JProgressBar progressBar = new JProgressBar();
+	private int count = 1;
 
-    public SplashScreen() {
+	public SplashScreen() {
+		setUndecorated(true);
+		setType(Type.POPUP);
+		setResizable(false);
 
-        Container container = getContentPane();
-        container.setLayout(null);
+		Container container = getContentPane();
+		container.setLayout(null);
 
-        JPanel panel = new JPanel();
-        panel.setBorder(new javax.swing.border.EtchedBorder());
-        panel.setBackground(new Color(255, 255, 255));
-        panel.setBounds(0, 0, 800, 566);
-        panel.setLayout(null);
-        container.add(panel);
+		JPanel panel = new JPanel();
+		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		panel.setBorder(new javax.swing.border.EtchedBorder());
+		panel.setBackground(new Color(19, 35, 47));
+		panel.setBounds(0, 0, 800, 566);
+		panel.setLayout(null);
+		container.add(panel);
 
-        JLabel label = new JLabel("Final Project");
-        label.setFont(new Font("Verdana", Font.BOLD, 14));
-        label.setBounds(340, 300, 400, 30);
-        panel.add(label);
+		JLabel lblFinalProject = new JLabel("Final Project - Group 2");
+		lblFinalProject.setHorizontalAlignment(SwingConstants.CENTER);
+		lblFinalProject.setFont(new Font("Verdana", Font.BOLD, 32));
+		lblFinalProject.setForeground(Color.WHITE);
+		lblFinalProject.setBounds(199, 300, 531, 55);
+		panel.add(lblFinalProject);
+		progressBar.setBounds(-1, 566, 801, 34);
+		getContentPane().add(progressBar);
 
-        progressBar.setMaximum(100);
-        progressBar.setBounds(0, 565, 799, 34);
-        container.add(progressBar);
-        loadProgressBar();
-        setSize(800, 600);
-        setLocationRelativeTo(null);
-        setVisible(true);
-    }
+		progressBar.setMaximum(100);
+		progressBar.setForeground(Helper.getTeal());
 
-    private void loadProgressBar() {
-        ActionListener al = new ActionListener() {
+		setSize(800, 600);
+		setLocationRelativeTo(null);
+		setVisible(true);
+	}
 
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                count++;
+	private void loadProgressBar() {
+		Timer timer = new Timer(SPEED, new ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				count = count + (count % 10);
+				progressBar.setValue(count);
+				//System.out.println(count);
 
-                progressBar.setValue(count);
+				if (count >= 100) {
+					//loadMainApp();
+					loadLoginGUI();
 
-                System.out.println(count);
+					Timer t = (Timer) evt.getSource();
 
-                if (count == 100) {
+					t.stop();
 
-                    createFrame();
-
-                    execute.setVisible(false);//swapped this around with timer1.stop()
-
-                    timer1.stop();
-                }
-            }
-
-            private void createFrame() throws HeadlessException {
-                JFrame frame = new JFrame("Main Menu");
-                
-                createMenuBar();
-                frame.setSize(800, 600);
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setVisible(true);
-            }
-
-			private void createMenuBar() {
-				final JMenuBar menubar = new JMenuBar();
-				
-				JMenu fileMenu = new JMenu("File");
-				JMenu viewMenu = new JMenu("View");
-				JMenu toolsMenu = new JMenu("Tools");
-				JMenu readMenu = new JMenu("Read");
-				JMenu helpMenu = new JMenu("Help");
-				
-				
-				menubar.add(fileMenu);
-				menubar.add(viewMenu);
-				menubar.add(toolsMenu);
-				menubar.add(readMenu);
-				menubar.add(helpMenu);
-				
-				//setJMenuBar(menubar);
+					return;
+				}
 			}
-        };
-        timer1 = new Timer(50, al);
-        timer1.start();
-    }
-    public static void main(String[] args) {
-        execute = new SplashScreen();
-    }
-};
+		});
 
+		timer.start();
+	}
+	private void loadMainApp(LoginWindow lw) {
+		this.setVisible(false); // hide itself which is the SplashScreen window
+		MainApp mainApp = new MainApp();
+		mainApp.setVisible(true);
+		mainApp.setTitle("Welcome " + lw.getUserEmail());
+
+	}
+	private void loadLoginGUI() {
+		this.setVisible(false); // hide itself which is the SplashScreen window
+		final LoginWindow lw = new LoginWindow();
+		lw.setActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//make sure you are here because of user logged in successfully
+				//Helper.displayMessage("Logged in as: " + lw.getUserRole());
+				loadMainApp(lw);
+			}
+		});
+		lw.setVisible(true);
+
+	}
+
+	public static void main(String[] args) {
+		SplashScreen ss = new SplashScreen();
+		ss.loadProgressBar();
+
+	}
+}
